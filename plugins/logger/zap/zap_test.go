@@ -67,7 +67,10 @@ func TestFields(t *testing.T) {
 }
 
 func TestFile(t *testing.T) {
-	output, err := writer.NewFileWriter("testdata", "log")
+	output, err := writer.NewFileWriter(
+		writer.WithPathOption("testdata"),
+		writer.WithCapOption(200),
+		writer.WithSuffixOption("log"))
 	if err != nil {
 		t.Errorf("logger setup error: %s", err.Error())
 	}
@@ -81,4 +84,8 @@ func TestFile(t *testing.T) {
 	})
 	fmt.Println(logger.DefaultLogger)
 	logger.DefaultLogger.Log(logger.InfoLevel, "hello")
+	logger.DefaultLogger.Log(logger.InfoLevel, "hello1")
+	logger.DefaultLogger.Log(logger.InfoLevel, "hello2")
+	logger.DefaultLogger.Log(logger.InfoLevel, "hello3")
+	logger.DefaultLogger.Log(logger.InfoLevel, "hello4")
 }
