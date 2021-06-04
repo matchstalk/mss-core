@@ -22,10 +22,10 @@ require (
 	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/goveralls v0.0.5 // indirect
 	github.com/nsqio/go-nsq v1.0.8
-	github.com/onsi/ginkgo v1.12.0 // indirect
-	github.com/onsi/gomega v1.9.0 // indirect
+	github.com/onsi/ginkgo v1.12.0
+	github.com/onsi/gomega v1.9.0
 	github.com/pkg/errors v0.9.1
-	github.com/prometheus/client_golang v1.10.0 // indirect
+	github.com/prometheus/client_golang v1.10.0
 	github.com/robinjoseph08/redisqueue/v2 v2.1.0
 	github.com/sirupsen/logrus v1.8.1
 	github.com/skip2/go-qrcode v0.0.0-20200617195104-da1b6568686e

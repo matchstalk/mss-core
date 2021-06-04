@@ -14,9 +14,13 @@ import (
 	"time"
 
 	recovery "github.com/grpc-ecosystem/go-grpc-middleware/recovery"
+	ctxtags "github.com/grpc-ecosystem/go-grpc-middleware/tags"
+	opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
+	prometheus "github.com/grpc-ecosystem/go-grpc-prometheus"
 	pbErr "github.com/matchstalk/mss-core/errors"
 	log "github.com/matchstalk/mss-core/logger"
 	"github.com/matchstalk/mss-core/tools/server/interceptors/logging"
+	reqtags "github.com/matchstalk/mss-core/tools/server/interceptors/request_tag"
 	"google.golang.org/grpc"
 )
 
@@ -142,12 +146,20 @@ func defaultOptions() *Options {
 		maxConcurrentStreams:  defaultMaxConcurrentStreams,
 		maxMsgSize:            defaultMaxMsgSize,
 		unaryServerInterceptors: []grpc.UnaryServerInterceptor{
-			recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(customRecovery("", ""))),
+			reqtags.UnaryServerInterceptor(),
+			ctxtags.UnaryServerInterceptor(),
+			opentracing.UnaryServerInterceptor(),
 			logging.UnaryServerInterceptor(log.NewHelper(log.DefaultLogger)),
+			prometheus.UnaryServerInterceptor,
+			recovery.UnaryServerInterceptor(recovery.WithRecoveryHandler(customRecovery("", ""))),
 		},
 		streamServerInterceptors: []grpc.StreamServerInterceptor{
-			recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(customRecovery("", ""))),
+			reqtags.StreamServerInterceptor(),
+			ctxtags.StreamServerInterceptor(),
+			opentracing.StreamServerInterceptor(),
 			logging.StreamServerInterceptor(log.NewHelper(log.DefaultLogger)),
+			prometheus.StreamServerInterceptor,
+			recovery.StreamServerInterceptor(recovery.WithRecoveryHandler(customRecovery("", ""))),
 		},
 	}
 }

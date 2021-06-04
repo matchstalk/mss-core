@@ -39,6 +39,9 @@ type Options struct {
 	// livenessEndpoint Liveness probe endpoint name, defaults to "healthz"
 	livenessEndpoint string
 
+	// metricsEndpoint metrics endpoint name, defaults to "metrics"
+	metricsEndpoint string
+
 	// gracefulShutdownTimeout is the duration given to runnable to stop before the manager actually returns on stop.
 	// To disable graceful shutdown, set to time.Duration(0)
 	// To use graceful shutdown without timeout, set to a negative duration, e.G. time.Duration(-1)

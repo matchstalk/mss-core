@@ -28,11 +28,14 @@ type Server struct {
 	// metricsListener is used to serve prometheus metrics
 	metricsListener net.Listener
 
-	// metricsExtraHandlers contains extra handlers to register on http server that serves metrics.
-	metricsExtraHandlers map[string]http.Handler
+	// metricsHandler contains extra handlers to register on http server that serves metrics.
+	metricsHandler http.Handler
 
 	// healthProbeListener is used to serve liveness probe
 	healthProbeListener net.Listener
+
+	// metricsEndpointName metrics endpoint name
+	metricsEndpointName string
 
 	// Readiness probe endpoint name
 	readinessEndpointName string
@@ -50,6 +53,7 @@ type Server struct {
 	started        bool
 	startedLeader  bool
 	healthzStarted bool
+	metricsStarted bool
 	errChan        chan error
 
 	// Logger is the logger that should be used by this manager.
@@ -124,27 +128,25 @@ func (cm *Server) Add(r Runnable) error {
 	return nil
 }
 
-// AddMetricsExtraHandler adds extra handler served on path to the http server that serves metrics.
-func (cm *Server) AddMetricsExtraHandler(path string, handler http.Handler) error {
-	if path == defaultMetricsEndpoint {
-		return fmt.Errorf("overriding builtin %s endpoint is not allowed", defaultMetricsEndpoint)
-	}
-
+// AddMetricsHandler adds extra handler served on path to the http server that serves metrics.
+func (cm *Server) AddMetricsHandler(handler http.Handler) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
-	_, found := cm.metricsExtraHandlers[path]
-	if found {
-		return fmt.Errorf("can't register extra handler by duplicate path %q on metrics http server", path)
+	if cm.stopProcedureEngaged {
+		return errors.New("can't accept new metrics as stop procedure is already engaged")
 	}
 
-	cm.metricsExtraHandlers[path] = handler
-	cm.logger.Info("Registering metrics http server extra handler", "path", path)
+	if cm.metricsStarted {
+		return fmt.Errorf("unable to add new checker because metrics endpoint has already been created")
+	}
+
+	cm.metricsHandler = handler
 	return nil
 }
 
 // AddHealthzHandler allows you to add Healthz checker
-func (cm *Server) AddHealthzHandler(name string, check http.Handler) error {
+func (cm *Server) AddHealthzHandler(check http.Handler) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
@@ -164,7 +166,7 @@ func (cm *Server) AddHealthzHandler(name string, check http.Handler) error {
 }
 
 // AddReadyzHandler allows you to add Readyz checker
-func (cm *Server) AddReadyzHandler(name string, check http.Handler) error {
+func (cm *Server) AddReadyzHandler(check http.Handler) error {
 	cm.mu.Lock()
 	defer cm.mu.Unlock()
 
@@ -190,17 +192,15 @@ func (cm *Server) serveMetrics() {
 	handler := promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{
 		ErrorHandling: promhttp.HTTPErrorOnError,
 	})
+	if cm.metricsHandler != nil {
+		handler = cm.metricsHandler
+	}
 	mux := http.NewServeMux()
 	mux.Handle(defaultMetricsEndpoint, handler)
 
-	func() {
-		cm.mu.Lock()
-		defer cm.mu.Unlock()
-
-		for path, extraHandler := range cm.metricsExtraHandlers {
-			mux.Handle(path, extraHandler)
-		}
-	}()
+	cm.mu.Lock()
+	defer cm.mu.Unlock()
+	cm.metricsStarted = true
 
 	server := http.Server{
 		Handler: mux,
@@ -366,10 +366,6 @@ func (cm *Server) waitForRunnableToEnd(shutdownCancel context.CancelFunc) error 
 		return fmt.Errorf("failed waiting for all runnables to end within grace period of %s: %w", cm.gracefulShutdownTimeout, err)
 	}
 	return nil
-}
-
-func (cm *Server) Elected() <-chan struct{} {
-	return cm.elected
 }
 
 func (cm *Server) startRunnable(r Runnable) {

@@ -9,8 +9,11 @@ package server
 
 import (
 	"context"
-	log "github.com/matchstalk/mss-core/logger"
 	"net/http"
+
+	log "github.com/matchstalk/mss-core/logger"
+	"github.com/matchstalk/mss-core/tools/metrics"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
 // Manager initializes shared dependencies such as Caches and Clients, and provides them to Runnable.
@@ -18,12 +21,12 @@ type Manager interface {
 	// Add will set requested dependencies on the component, and cause the component to be
 	// started when Start is called.
 	Add(Runnable) error
-	// AddMetricsExtraHandler adds an handler served on path to the http server that serves metrics.
-	AddMetricsExtraHandler(path string, handler http.Handler) error
+	// AddMetricsHandler adds an handler served on path to the http server that serves metrics.
+	AddMetricsHandler(handler http.Handler) error
 	// AddHealthzHandler allows you to add Healthz handler
-	AddHealthzHandler(name string, handler http.Handler) error
+	AddHealthzHandler(handler http.Handler) error
 	// AddReadyzHandler allows you to add Readyz handler
-	AddReadyzHandler(name string, handler http.Handler) error
+	AddReadyzHandler(handler http.Handler) error
 	// Start starts all registered Controllers and blocks until the context is canceled.
 	Start(ctx context.Context) error
 }
@@ -53,9 +56,6 @@ func New(opts ...Option) (Manager, error) {
 		return nil, err
 	}
 
-	// By default we have no extra endpoints to expose on metrics http server.
-	metricsExtraHandlers := make(map[string]http.Handler)
-
 	// Create health probes listener. This will throw an error if the bind
 	// address is invalid or already in use.
 	healthProbeListener, err := options.healthProbeListener(options.healthProbeBind)
@@ -64,8 +64,11 @@ func New(opts ...Option) (Manager, error) {
 	}
 
 	return &Server{
-		metricsListener:         metricsListener,
-		metricsExtraHandlers:    metricsExtraHandlers,
+		metricsListener: metricsListener,
+		metricsHandler: promhttp.HandlerFor(metrics.Registry, promhttp.HandlerOpts{
+			EnableOpenMetrics: true,
+			ErrorHandling:     promhttp.HTTPErrorOnError,
+		}),
 		logger:                  log.NewHelper(log.DefaultLogger),
 		elected:                 make(chan struct{}),
 		leaseDuration:           defaultLeaseDuration,
