@@ -13,7 +13,6 @@ import (
 	"time"
 
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/matchstalk/mss-core/logger"
 	"github.com/matchstalk/mss-core/tools/server/interceptors/logging/ctxlog"
 	"github.com/matchstalk/mss-core/tools/utils"
 	"google.golang.org/grpc"
@@ -28,12 +27,12 @@ var (
 )
 
 // UnaryServerInterceptor returns a new unary server interceptors that adds zap.Logger to the context.
-func UnaryServerInterceptor(l *logger.Helper, opts ...Option) grpc.UnaryServerInterceptor {
+func UnaryServerInterceptor(opts ...Option) grpc.UnaryServerInterceptor {
 	o := evaluateServerOpt(opts)
 	return func(ctx context.Context, req interface{}, info *grpc.UnaryServerInfo, handler grpc.UnaryHandler) (interface{}, error) {
 		startTime := time.Now()
 
-		newCtx := newLoggerForCall(ctx, l, info.FullMethod, startTime, o.timestampFormat)
+		newCtx := newLoggerForCall(ctx, info.FullMethod, startTime, o.timestampFormat)
 
 		resp, err := handler(newCtx, req)
 		if !o.shouldLog(info.FullMethod, err) {
@@ -49,11 +48,11 @@ func UnaryServerInterceptor(l *logger.Helper, opts ...Option) grpc.UnaryServerIn
 }
 
 // StreamServerInterceptor returns a new streaming server interceptor that adds zap.Logger to the context.
-func StreamServerInterceptor(l *logger.Helper, opts ...Option) grpc.StreamServerInterceptor {
+func StreamServerInterceptor(opts ...Option) grpc.StreamServerInterceptor {
 	o := evaluateServerOpt(opts)
 	return func(srv interface{}, stream grpc.ServerStream, info *grpc.StreamServerInfo, handler grpc.StreamHandler) error {
 		startTime := time.Now()
-		newCtx := newLoggerForCall(stream.Context(), l, info.FullMethod, startTime, o.timestampFormat)
+		newCtx := newLoggerForCall(stream.Context(), info.FullMethod, startTime, o.timestampFormat)
 		wrapped := middleware.WrapServerStream(stream)
 		wrapped.WrappedContext = newCtx
 
@@ -80,7 +79,7 @@ func serverCallFields(fullMethodString string) ctxlog.Fields {
 	return f
 }
 
-func newLoggerForCall(ctx context.Context, l *logger.Helper, fullMethodString string, start time.Time, timestampFormat string) context.Context {
+func newLoggerForCall(ctx context.Context, fullMethodString string, start time.Time, timestampFormat string) context.Context {
 	f := serverCallFields(fullMethodString)
 	f.Set("grpc.start_time", start.Format(timestampFormat))
 	if d, ok := ctx.Deadline(); ok {
@@ -88,7 +87,7 @@ func newLoggerForCall(ctx context.Context, l *logger.Helper, fullMethodString st
 	}
 	requestID := utils.GetRequestID(ctx)
 	f.Set(utils.RequestIDKey, requestID)
-	callLog := l.WithFields(f.Values())
+	callLog := ctxlog.Extract(ctx).WithFields(f.Values())
 	ctx = context.WithValue(ctx, utils.RequestIDKey, requestID)
 	return ctxlog.ToContext(ctx, callLog)
 }

@@ -43,7 +43,7 @@ type Option func(*options)
 type CodeToLevel func(code codes.Code) logger.Level
 
 // DurationToField function defines how to produce duration fields for logging
-type DurationToField func(duration time.Duration) map[string]interface{}
+type DurationToField func(duration time.Duration) ctxlog.Fields
 
 // WithDecider customizes the function for deciding if the gRPC interceptor logs should log.
 func WithDecider(f grpc_logging.Decider) Option {
@@ -88,7 +88,7 @@ func WithTimestampFormat(format string) Option {
 }
 
 // MessageProducer produces a user defined log message
-type MessageProducer func(ctx context.Context, msg string, level logger.Level, code codes.Code, err error, duration map[string]interface{})
+type MessageProducer func(ctx context.Context, msg string, level logger.Level, code codes.Code, err error, duration ctxlog.Fields)
 
 func evaluateServerOpt(opts []Option) *options {
 	optCopy := &options{}
@@ -198,8 +198,8 @@ func DefaultClientCodeToLevel(code codes.Code) logger.Level {
 var DefaultDurationToField = DurationToTimeMillisField
 
 // DurationToTimeMillisField converts the duration to milliseconds and uses the key `grpc.time_ms`.
-func DurationToTimeMillisField(duration time.Duration) map[string]interface{} {
-	return map[string]interface{}{"grpc.time_ms": durationToMilliseconds(duration)}
+func DurationToTimeMillisField(duration time.Duration) ctxlog.Fields {
+	return *ctxlog.NewFields("grpc.time_ms", durationToMilliseconds(duration))
 }
 
 // DurationToDurationField uses a Duration field to log the request duration
@@ -213,16 +213,14 @@ func durationToMilliseconds(duration time.Duration) float32 {
 }
 
 // DefaultMessageProducer writes the default message
-func DefaultMessageProducer(ctx context.Context, msg string, level logger.Level, code codes.Code, err error, duration map[string]interface{}) {
+func DefaultMessageProducer(ctx context.Context, msg string, level logger.Level, code codes.Code, err error, duration ctxlog.Fields) {
 	// re-extract logger from newCtx, as it may have extra fields that changed in the holder.
 	fields := duration
-	if fields == nil {
-		fields = make(map[string]interface{})
-	}
-	fields["grpc.code"] = code.String()
-	if err != nil {
-		ctxlog.Extract(ctx).WithFields(fields).Error(msg, err)
-		return
-	}
-	ctxlog.Extract(ctx).WithFields(fields).Info(msg)
+	fields.Set("grpc.code", code.String())
+	ctxlog.Extract(ctx).WithFields(fields.Values()).Log(level, msg, err)
+	//if err != nil {
+	//	ctxlog.Extract(ctx).WithFields(fields.Values()).Error(msg, err)
+	//	return
+	//}
+	//ctxlog.Extract(ctx).WithFields(fields.Values()).Info(msg)
 }

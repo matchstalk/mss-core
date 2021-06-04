@@ -19,7 +19,6 @@ require (
 	github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0
 	github.com/imdario/mergo v0.3.9
 	github.com/json-iterator/go v1.1.10
-	github.com/mattn/go-colorable v0.1.6 // indirect
 	github.com/mattn/goveralls v0.0.5 // indirect
 	github.com/nsqio/go-nsq v1.0.8
 	github.com/onsi/ginkgo v1.12.0
@@ -33,7 +32,7 @@ require (
 	github.com/spf13/cast v1.3.1
 	github.com/urfave/cli v1.22.3 // indirect
 	go.uber.org/zap v1.17.0
-	golang.org/x/crypto v0.0.0-20200622213623-75b288015ac9
+	golang.org/x/crypto v0.0.0-20210322153248-0c34fe9e7dc2
 	golang.org/x/image v0.0.0-20210220032944-ac19c3e999fb // indirect
 	google.golang.org/grpc v1.29.1
 	google.golang.org/protobuf v1.25.0

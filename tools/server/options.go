@@ -8,19 +8,19 @@
 package server
 
 import (
+	"math"
 	"net"
 	"time"
 )
 
 const (
-	defaultLeaseDuration          = 15 * time.Second
-	defaultRenewDeadline          = 15 * time.Second
-	defaultRetryPeriod            = 2 * time.Second
-	defaultGracefulShutdownPeriod = 30 * time.Second
-
-	defaultReadinessEndpoint = "/readyz"
-	defaultLivenessEndpoint  = "/healthz"
-	defaultMetricsEndpoint   = "/metrics"
+	infinity                           = time.Duration(math.MaxInt64)
+	defaultMaxMsgSize                  = 4 << 20
+	defaultMaxConcurrentStreams        = 100000
+	defaultKeepAliveTime               = 30 * time.Second
+	defaultConnectionIdleTime          = 10 * time.Second
+	defaultMaxServerConnectionAgeGrace = 10 * time.Second
+	defaultMiniKeepAliveTimeRate       = 2
 )
 
 type Options struct {

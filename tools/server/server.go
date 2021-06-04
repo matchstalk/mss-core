@@ -22,6 +22,17 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 )
 
+const (
+	defaultLeaseDuration          = 15 * time.Second
+	defaultRenewDeadline          = 15 * time.Second
+	defaultRetryPeriod            = 2 * time.Second
+	defaultGracefulShutdownPeriod = 30 * time.Second
+
+	defaultReadinessEndpoint = "/readyz"
+	defaultLivenessEndpoint  = "/healthz"
+	defaultMetricsEndpoint   = "/metrics"
+)
+
 var _ Runnable = &Server{}
 
 type Server struct {
