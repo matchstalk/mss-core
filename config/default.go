@@ -33,7 +33,10 @@ type watcher struct {
 func newConfig(opts ...Option) (Config, error) {
 	var c config
 
-	c.Init(opts...)
+	err := c.Init(opts...)
+	if err != nil {
+		return nil, err
+	}
 	go c.run()
 
 	return &c, nil
@@ -123,7 +126,7 @@ func (c *config) run() {
 			case <-done:
 			case <-c.exit:
 			}
-			w.Stop()
+			_ = w.Stop()
 		}()
 
 		// block watch

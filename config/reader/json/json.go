@@ -11,6 +11,8 @@ import (
 	"github.com/matchstalk/mss-core/config/source"
 )
 
+const readerTyp = "json"
+
 type jsonReader struct {
 	opts reader.Options
 	json encoder.Encoder

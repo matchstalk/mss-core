@@ -58,7 +58,7 @@ func TestWithLogger(t *testing.T) {
 }
 
 func TestJSON(t *testing.T) {
-	logger.DefaultLogger = NewLogger(WithJSONFormatter(&logrus.JSONFormatter{}))
+	logger.DefaultLogger = NewLogger(WithFormatter(&logrus.JSONFormatter{}))
 
 	logger.Logf(logger.InfoLevel, "test logf: %s", "name")
 }

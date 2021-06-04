@@ -6,6 +6,7 @@ import (
 	"github.com/matchstalk/mss-core/logger"
 )
 
+// Options 参数配置
 type Options struct {
 	logger.Options
 	Formatter logrus.Formatter
@@ -18,22 +19,21 @@ type Options struct {
 
 type formatterKey struct{}
 
-func WithTextTextFormatter(formatter *logrus.TextFormatter) logger.Option {
-	return logger.SetOption(formatterKey{}, formatter)
-}
-func WithJSONFormatter(formatter *logrus.JSONFormatter) logger.Option {
-	return logger.SetOption(formatterKey{}, formatter)
+// WithFormatter set formatter
+func WithFormatter(f logrus.Formatter) logger.Option {
+	return logger.SetOption(formatterKey{}, f)
 }
 
 type hooksKey struct{}
 
+// WithLevelHooks set hook
 func WithLevelHooks(hooks logrus.LevelHooks) logger.Option {
 	return logger.SetOption(hooksKey{}, hooks)
 }
 
 type reportCallerKey struct{}
 
-// warning to use this option. because logrus doest not open CallerDepth option
+// ReportCaller warning to use this option. because logrus doest not open CallerDepth option
 // this will only print this package
 func ReportCaller() logger.Option {
 	return logger.SetOption(reportCallerKey{}, true)

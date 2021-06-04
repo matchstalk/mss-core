@@ -51,7 +51,6 @@ type Server struct {
 
 	mu             sync.Mutex
 	started        bool
-	startedLeader  bool
 	healthzStarted bool
 	metricsStarted bool
 	errChan        chan error
@@ -272,7 +271,7 @@ func (cm *Server) Start(ctx context.Context) (err error) {
 				// Utilerrors.Aggregate allows to use errors.Is for all contained errors
 				// whereas fmt.Errorf allows wrapping at most one error which means the
 				// other one can not be found anymore.
-				err = fmt.Errorf("%w, stopError: %w", err, stopErr)
+				err = fmt.Errorf("%w, stopError: %s", err, stopErr.Error())
 			} else {
 				err = stopErr
 			}

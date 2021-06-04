@@ -34,10 +34,12 @@ type Watcher interface {
 	Stop() error
 }
 
+// Entity 配置实体
 type Entity interface {
 	OnChange()
 }
 
+// Options 配置的参数
 type Options struct {
 	Loader loader.Loader
 	Reader reader.Reader
@@ -49,6 +51,7 @@ type Options struct {
 	Entity Entity
 }
 
+// Option 调用类型
 type Option func(o *Options)
 
 var (

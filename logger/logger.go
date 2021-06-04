@@ -22,22 +22,27 @@ type Logger interface {
 	String() string
 }
 
+// Init initialises options
 func Init(opts ...Option) error {
 	return DefaultLogger.Init(opts...)
 }
 
+// Fields set fields to always be logged
 func Fields(fields map[string]interface{}) Logger {
 	return DefaultLogger.Fields(fields)
 }
 
+// Log writes a log entry
 func Log(level Level, v ...interface{}) {
 	DefaultLogger.Log(level, v...)
 }
 
+// Logf writes a formatted log entry
 func Logf(level Level, format string, v ...interface{}) {
 	DefaultLogger.Logf(level, format, v...)
 }
 
+// String returns the name of logger
 func String() string {
 	return DefaultLogger.String()
 }
