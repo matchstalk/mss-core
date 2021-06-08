@@ -1,11 +1,11 @@
 /*
  * @Author: lwnmengjing
- * @Date: 2021/6/4 4:29 下午
+ * @Date: 2021/6/8 5:29 下午
  * @Last Modified by: lwnmengjing
- * @Last Modified time: 2021/6/4 4:29 下午
+ * @Last Modified time: 2021/6/8 5:29 下午
  */
 
-package server
+package grpc
 
 import (
 	"context"
@@ -15,17 +15,17 @@ import (
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
 	opentracing "github.com/grpc-ecosystem/go-grpc-middleware/tracing/opentracing"
 	log "github.com/matchstalk/mss-core/logger"
-	"github.com/matchstalk/mss-core/tools/server/interceptors/logging"
-	reqtags "github.com/matchstalk/mss-core/tools/server/interceptors/request_tag"
+	"github.com/matchstalk/mss-core/server/grpc/interceptors/logging"
+	reqtags "github.com/matchstalk/mss-core/server/grpc/interceptors/request_tag"
 	"google.golang.org/grpc"
 )
 
-type GRPCService struct {
+type Service struct {
 	Connection  *grpc.ClientConn
 	CallTimeout time.Duration
 }
 
-func (e *GRPCService) Dial(
+func (e *Service) Dial(
 	endpoint string,
 	callTimeout time.Duration,
 	unary ...grpc.UnaryClientInterceptor) (err error) {

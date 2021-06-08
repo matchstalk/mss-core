@@ -22,6 +22,7 @@ import (
 )
 
 type Server struct {
+	name    string
 	srv     *grpc.Server
 	mux     sync.Mutex
 	started bool
@@ -29,11 +30,16 @@ type Server struct {
 }
 
 // New new grpc server
-func New(options ...Option) *Server {
-	s := &Server{}
+func New(name string, options ...Option) *Server {
+	s := &Server{name: name}
 	s.Options(options...)
 	s.NewServer()
 	return s
+}
+
+// String string
+func (e *Server) String() string {
+	return e.name
 }
 
 func (e *Server) Options(options ...Option) {
@@ -101,8 +107,16 @@ func (e *Server) Start(ctx context.Context) error {
 	}()
 	e.started = true
 	<-ctx.Done()
+	return e.Shutdown(ctx)
+}
+
+func (e *Server) Attempt() bool {
+	return !e.started
+}
+
+func (e *Server) Shutdown(ctx context.Context) error {
+	<-ctx.Done()
 	log.Info("gRPC Server will be shutdown gracefully")
 	e.srv.GracefulStop()
-
 	return nil
 }

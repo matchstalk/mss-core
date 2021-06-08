@@ -13,7 +13,7 @@ import (
 	"time"
 
 	middleware "github.com/grpc-ecosystem/go-grpc-middleware"
-	"github.com/matchstalk/mss-core/tools/server/interceptors/logging/ctxlog"
+	"github.com/matchstalk/mss-core/server/grpc/interceptors/logging/ctxlog"
 	"github.com/matchstalk/mss-core/tools/utils"
 	"google.golang.org/grpc"
 )

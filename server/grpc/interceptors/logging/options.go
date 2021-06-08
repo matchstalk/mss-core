@@ -13,7 +13,7 @@ import (
 
 	grpc_logging "github.com/grpc-ecosystem/go-grpc-middleware/logging"
 	"github.com/matchstalk/mss-core/logger"
-	"github.com/matchstalk/mss-core/tools/server/interceptors/logging/ctxlog"
+	"github.com/matchstalk/mss-core/server/grpc/interceptors/logging/ctxlog"
 	"google.golang.org/grpc/codes"
 )
 

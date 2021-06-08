@@ -2,11 +2,10 @@ package ctxlog_test
 
 import (
 	"context"
-
 	"github.com/grpc-ecosystem/go-grpc-middleware/tags"
 	pb_testproto "github.com/grpc-ecosystem/go-grpc-middleware/testing/testproto"
 	"github.com/matchstalk/mss-core/logger"
-	"github.com/matchstalk/mss-core/tools/server/interceptors/logging/ctxlog"
+	"github.com/matchstalk/mss-core/service/grpc/interceptors/logging/ctxlog"
 )
 
 // Simple unary handler that adds custom fields to the requests's context. These will be used for all log statements.
